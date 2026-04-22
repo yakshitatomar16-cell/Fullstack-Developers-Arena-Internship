@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TaskFlow — Task Manager</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+  <div class="app-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-icon">⬡</span>
+        <span class="brand-name">TaskFlow</span>
+      </div>
+
+      <nav class="filters">
+        <button class="filter-btn active" data-filter="all">
+          <i class="fa-solid fa-border-all"></i> All Tasks
+        </button>
+        <button class="filter-btn" data-filter="active">
+          <i class="fa-regular fa-circle"></i> Active
+        </button>
+        <button class="filter-btn" data-filter="completed">
+          <i class="fa-solid fa-circle-check"></i> Completed
+        </button>
+        <button class="filter-btn" data-filter="high">
+          <i class="fa-solid fa-fire"></i> High Priority
+        </button>
+        <button class="filter-btn" data-filter="overdue">
+          <i class="fa-solid fa-triangle-exclamation"></i> Overdue
+        </button>
+      </nav>
+
+      <div class="stats-box">
+        <div class="stat-item">
+          <span class="stat-value" id="stat-total">0</span>
+          <span class="stat-label">Total</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-active">0</span>
+          <span class="stat-label">Active</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-done">0</span>
+          <span class="stat-label">Done</span>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="clear-completed-btn" title="Clear completed tasks">
+          <i class="fa-solid fa-trash-can"></i> Clear Completed
+        </button>
+        <button id="export-btn" title="Export tasks as JSON">
+          <i class="fa-solid fa-file-export"></i> Export
+        </button>
+        <label for="import-file" class="import-label" title="Import tasks from JSON">
+          <i class="fa-solid fa-file-import"></i> Import
+        </label>
+        <input type="file" id="import-file" accept=".json" style="display:none"/>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <header class="top-bar">
+        <div class="search-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search-input" placeholder="Search tasks…" autocomplete="off"/>
+        </div>
+        <div class="top-actions">
+          <button id="theme-toggle" title="Toggle theme">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+          </button>
+          <button id="add-task-btn" class="primary-btn">
+            <i class="fa-solid fa-plus"></i> New Task
+          </button>
+        </div>
+      </header>
+
+      <div class="content-body">
+        <div class="section-heading">
+          <h1 id="filter-title">All Tasks</h1>
+          <div class="sort-wrap">
+            <label for="sort-select">Sort:</label>
+            <select id="sort-select">
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="priority">Priority</option>
+              <option value="due">Due Date</option>
+              <option value="alpha">A–Z</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-wrap">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+          </div>
+          <span id="progress-label">0% complete</span>
+        </div>
+
+        <!-- Task list -->
+        <ul class="task-list" id="task-list">
+          <!-- Tasks rendered here by JS -->
+        </ul>
+
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">✦</div>
+          <p>No tasks here.<br/>Add one to get started!</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add / Edit Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="task-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <h2 id="modal-title">New Task</h2>
+        <button class="modal-close" id="modal-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="task-title-input">Task Title <span class="required">*</span></label>
+          <input type="text" id="task-title-input" placeholder="What needs to be done?" maxlength="120" autocomplete="off"/>
+          <span class="error-msg" id="title-error"></span>
+        </div>
+        <div class="form-group">
+          <label for="task-desc-input">Description</label>
+          <textarea id="task-desc-input" placeholder="Add details (optional)…" rows="3" maxlength="300"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="task-priority">Priority</label>
+            <select id="task-priority">
+              <option value="low">🟢 Low</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="high">🔴 High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="task-due">Due Date</label>
+            <input type="date" id="task-due"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="task-tags-input">Tags <span class="hint">(comma separated)</span></label>
+          <input type="text" id="task-tags-input" placeholder="e.g. work, personal, urgent" autocomplete="off"/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-cancel" class="secondary-btn">Cancel</button>
+        <button id="modal-save" class="primary-btn">Save Task</button>
+      </div>
+      <input type="hidden" id="editing-task-id"/>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
